@@ -1,7 +1,7 @@
 import pygame
 from random import randint
 
-FPS = 10
+FPS = 5
 WINDOW_SIZE = (1000, 500)
 WHITE_COLOR = (255, 255, 255)
 BLACK_COLOR = (  0,   0,   0)
