@@ -1,10 +1,12 @@
 from defines import *
+from machine_learning import *
 
 # Some Global Variables
 game_run = True
 game_start = False
 ate_flag = False
 dead_flag = False
+machine_learninig_flag = False
 score = 0
 cur_snake = snake_struct()
 cur_food = food_struct()
@@ -26,7 +28,7 @@ def game_init():
     pygame.display.update() # Ask Window to Update
 
 def game_calculate(key_pressed):
-    global ate_flag, dead_flag, score
+    global ate_flag, dead_flag, score, machine_learninig_flag
     # Food
     cur_food.food_update(ate_flag)
     
@@ -53,8 +55,13 @@ def game_calculate(key_pressed):
         score += 1
         cur_snake.temp_append.append(cur_snake.body[len(cur_snake.body) - 1])
 
+def machine_learninig_flow():
+    # Update Distances
+    cur_snake.calculate_distance(cur_food.loc)
+
 def win_draw():
-    global score
+    global score, machine_learninig_flag
+    snake_head_flag = True
     WIN.fill(WHITE_COLOR)
     
     #CHECK LOCATION
@@ -70,12 +77,25 @@ def win_draw():
 
     for body_rect_idx  in cur_snake.body:
         snake_R = pygame.Rect(body_rect_idx[0], body_rect_idx[1], BLOCK_SIZE, BLOCK_SIZE)
-        pygame.draw.rect(WIN, GREEN_COLOR, snake_R)
+        if snake_head_flag == True:
+            snake_head_flag = False
+            pygame.draw.rect(WIN, DARKG_COLOR, snake_R)
+        else:
+            pygame.draw.rect(WIN, GREEN_COLOR, snake_R)
+
+    if machine_learninig_flag:
+        for idx in range(4):
+            if(cur_snake.draw_head_to_body[idx] != (-1, -1)):
+                dis_R = pygame.Rect(cur_snake.draw_head_to_body[idx][0], cur_snake.draw_head_to_body[idx][1], BLOCK_SIZE, BLOCK_SIZE)
+                pygame.draw.rect(WIN, RED_COLOR, dis_R)
+                dis_text = (str(cur_snake.distance_head_to_body[idx]))
+                dis_text_R = DISTANCE_FONT.render(dis_text, 1, WHITE_COLOR)
+                WIN.blit(dis_text_R, (cur_snake.draw_head_to_body[idx]))
 
     pygame.display.update() # Ask Window to Update
 
 def main():
-    global game_run, game_start
+    global game_run, game_start, machine_learninig_flag
     clock = pygame.time.Clock()
     while game_run:
         clock.tick(FPS) # Set Window FPS
@@ -86,10 +106,19 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN and game_start == False:
                     game_start = True
+                elif event.key == pygame.K_l:
+                    if(machine_learninig_flag == True):
+                        machine_learninig_flag = False
+                        #print("ML Flag FALSE")
+                    else:
+                        machine_learninig_flag = True
+                        #print("ML Flag TRUE")
         if game_start == False or dead_flag == True:
             game_init()
         else:
             game_calculate(pygame.key.get_pressed())
+            if machine_learninig_flag == True:
+                machine_learninig_flow()
             win_draw()
 
 
